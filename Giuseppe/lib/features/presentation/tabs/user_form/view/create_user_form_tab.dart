@@ -285,97 +285,136 @@ void _showEditDialog(BuildContext context, String cedula, String nombre,
   final _direccionController = TextEditingController(text: direccion);
 
   showDialog(
+    barrierColor: Color.fromRGBO(255, 255, 255, 0.85),
     context: context,
     builder: (context) {
-      return AlertDialog(
-        title: Text(
-          'Editar Usuario',
-          style: TextStyle(
-            fontSize: 25.0,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        content: SingleChildScrollView(
-          child: Form(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextFormField(
-                  controller: _nombreController,
-                  decoration: const InputDecoration(labelText: 'Nombre'),
-                ),
-                TextFormField(
-                  controller: _telefonoController,
-                  decoration: const InputDecoration(labelText: 'Teléfono'),
-                ),
-                TextFormField(
-                  controller: _correoController,
-                  decoration: const InputDecoration(labelText: 'Correo'),
-                ),
-                TextFormField(
-                  controller: _direccionController,
-                  decoration: const InputDecoration(labelText: 'Dirección'),
-                ),
-                const SizedBox(height: 10),
-                Text('Cédula: $cedula',
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
-              ],
+      return Dialog(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.0),
+            border: Border.all(
+              color: AppColors.primaryVariantColor,
+              width: 0.5,
             ),
-          ),
-        ),
-        actions: <Widget>[
-          ElevatedButton(
-            child: const Text(
-              'Cancelar',
-              style: TextStyle(
-                color: Colors.black,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                spreadRadius: 1,
+                blurRadius: 3,
+                offset: Offset(0, 3),
               ),
-            ),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryVariantColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-            ),
+            ],
           ),
-          ElevatedButton(
-            child: const Text(
-              'Guardar',
-              style: TextStyle(
-                color: Colors.white,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Editar Usuario',
+                  style: TextStyle(
+                    fontSize: 25.0,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
               ),
-            ),
-            onPressed: () async {
-              //actualizar usuario
-              await updatePersona(
-                cedula,
-                _nombreController.text.trim(),
-                _telefonoController.text.trim(),
-                _correoController.text.trim(),
-                _direccionController.text.trim(),
-              );
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: SingleChildScrollView(
+                  child: Form(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                          controller: _nombreController,
+                          decoration: const InputDecoration(labelText: 'Nombre'),
+                        ),
+                        TextFormField(
+                          controller: _telefonoController,
+                          decoration: const InputDecoration(labelText: 'Teléfono'),
+                        ),
+                        TextFormField(
+                          controller: _correoController,
+                          decoration: const InputDecoration(labelText: 'Correo'),
+                        ),
+                        TextFormField(
+                          controller: _direccionController,
+                          decoration: const InputDecoration(labelText: 'Dirección'),
+                        ),
+                        const SizedBox(height: 10),
+                        Text('Cédula: $cedula',
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 15.0,
+              ),
+              OverflowBar(
+                children: [
+                  ElevatedButton(
+                    child: const Text(
+                      'Cancelar',
+                      style: TextStyle(
+                        color: Colors.black,
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryVariantColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 5.0,
+                  ),
+                  ElevatedButton(
+                    child: const Text(
+                      'Guardar',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                    onPressed: () async {
+                      // Actualiza el usuario
+                      await updatePersona(
+                        cedula,
+                        _nombreController.text.trim(),
+                        _telefonoController.text.trim(),
+                        _correoController.text.trim(),
+                        _direccionController.text.trim(),
+                      );
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Usuario actualizado con éxito')),
-              );
-              Navigator.of(context).pop();
-              onUpdate();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.secondaryVariantColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Usuario actualizado con éxito')),
+                      );
+                      Navigator.of(context).pop();
+                      onUpdate();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.secondaryVariantColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       );
     },
   );
 }
+
 
 //Página de añadir usuario
 class UserFormPage extends StatelessWidget {
