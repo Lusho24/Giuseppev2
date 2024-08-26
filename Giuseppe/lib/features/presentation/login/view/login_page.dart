@@ -73,7 +73,7 @@ class _SignInFormState extends State<_SignInForm> {
                 CustomTextFormField(
                   controller: _idController,
                   formFieldType: FormFieldType.identity_card,
-                  hintText: '1705380561',
+                  hintText: 'Ingrese su Cédula',
                 ),
               ],
             ),
@@ -86,7 +86,7 @@ class _SignInFormState extends State<_SignInForm> {
                 CustomTextFormField(
                   controller: _passwordController,
                   formFieldType: FormFieldType.password,
-                  hintText: '********',
+                  hintText: 'Ingrese su contraseña',
                 ),
               ],
             ),

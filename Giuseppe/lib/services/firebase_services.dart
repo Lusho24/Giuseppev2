@@ -23,11 +23,12 @@ Future<List<Map<String, dynamic>>> getPersonas() async {
 }
 
 // Agregar un nuevo usuario
+// Agregar un nuevo usuario
 Future<void> addPersona(String cedula, String nombre, String clave, String telefono, String correo, String direccion) async {
   try {
-    // Validar existencia de documento con ese ID de cedula
-    DocumentSnapshot existingUser = await db.collection('usuario').doc(cedula).get();
-    if (existingUser.exists) {
+    // Validar existencia de documento con ese ID de cédula
+    bool exists = await validateID(cedula);
+    if (exists) {
       print("El usuario con esta cédula ya existe.");
       return;
     }
@@ -40,6 +41,7 @@ Future<void> addPersona(String cedula, String nombre, String clave, String telef
       'correo': correo,
       'direccion': direccion,
     });
+    print("Usuario agregado con éxito.");
   } catch (e) {
     print("Error agregando usuario: $e");
   }
@@ -66,19 +68,21 @@ Future<void> updatePersona(String cedula, String nombre, String telefono, String
 }
 
 // Eliminar un usuario
-Future<void> deletePersona(String cedula, String clave) async {
+Future<void> deletePersona(String cedula) async {
   try {
-    // Validar usuario antes de eliminar
-    bool isValidUser = await validateUsuario(cedula, clave);
-    if (isValidUser) {
+    DocumentSnapshot documentSnapshot = await db.collection('usuario').doc(cedula).get();
+    if (documentSnapshot.exists) {
       await db.collection('usuario').doc(cedula).delete();
+      print("Usuario eliminado con éxito.");
     } else {
-      print("No se puede eliminar. Usuario o clave inválida.");
+      print("El usuario no existe.");
     }
   } catch (e) {
     print("Error eliminando usuario: $e");
   }
 }
+
+
 
 // Validar el usuario y la contraseña
 Future<bool> validateUsuario(String cedula, String clave) async {
@@ -102,5 +106,16 @@ Future<bool> validateUsuario(String cedula, String clave) async {
   } catch (e) {
     print("Error validando usuario: $e"); // Error si no cumplio nada
     return false;
+  }
+}
+
+//validar la existencia de la cedula antes de crear
+Future<bool> validateID(String cedula) async {
+  try {
+    DocumentSnapshot doc = await db.collection('usuario').doc(cedula).get();
+    return doc.exists;
+  } catch (e) {
+    print("Error validando usuario: $e");
+    throw Exception('Error al validar el usuario.');
   }
 }

@@ -1,13 +1,31 @@
 import 'package:flutter/material.dart';
-
 import '../../../../../services/firebase_services.dart';
 import '../../../../../utils/theme/app_colors.dart';
 import '../../../common_widgets/custom_text_form_field.dart';
 
-class CreateUserFormTab extends StatelessWidget {
+class CreateUserFormTab extends StatefulWidget {
   final Future<List<Map<String, dynamic>>> usuariosFuture;
 
   const CreateUserFormTab({super.key, required this.usuariosFuture});
+
+  @override
+  _CreateUserFormTabState createState() => _CreateUserFormTabState();
+}
+
+class _CreateUserFormTabState extends State<CreateUserFormTab> {
+  late Future<List<Map<String, dynamic>>> _usuariosFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _usuariosFuture = widget.usuariosFuture;
+  }
+
+  Future<void> _refreshUsuarios() async {
+    setState(() {
+      _usuariosFuture = getPersonas();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +43,7 @@ class CreateUserFormTab extends StatelessWidget {
             ),
           ),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
               children: [
                 const Text(
@@ -36,17 +53,22 @@ class CreateUserFormTab extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Spacer(), //el spacer pone al otro extremo el otro objeto
+                const Spacer(),
                 SizedBox(
                   height: 25,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const UserFormPage(),
                         ),
                       );
+
+                      // Si el resultado es true, refresca la lista de usuarios
+                      if (result == true) {
+                        _refreshUsuarios();
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.secondaryVariantColor,
@@ -68,21 +90,30 @@ class CreateUserFormTab extends StatelessWidget {
           ),
           Expanded(
             child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: usuariosFuture,
+              future: _usuariosFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                      child: Text('No hay usuarios disponibles'));
+                  return const Center(child: Text('No hay usuarios disponibles'));
                 } else {
+                  List<Map<String, dynamic>> usuariosOrdenados = snapshot.data!
+                    ..sort((a, b) {
+                      String nombreA = a['nombre'] ?? '';
+                      String nombreB = b['nombre'] ?? '';
+                      return nombreA.compareTo(nombreB);
+                    });
+
                   return ListView.builder(
-                    itemCount: snapshot.data!.length,
+                    itemCount: usuariosOrdenados.length,
                     itemBuilder: (context, index) {
-                      var user = snapshot.data![index];
-                      return UserCard(user: user);
+                      var user = usuariosOrdenados[index];
+                      return UserCard(
+                        user: user,
+                        onDelete: _refreshUsuarios, // Pasar la referencia al método
+                      );
                     },
                   );
                 }
@@ -95,13 +126,23 @@ class CreateUserFormTab extends StatelessWidget {
   }
 }
 
+
 class UserCard extends StatelessWidget {
   final Map<String, dynamic> user;
+  final VoidCallback onDelete;
 
-  const UserCard({super.key, required this.user});
+  const UserCard({super.key,
+    required this.user,
+    required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
+    final nombre = user['nombre'] ?? 'Nombre Usuario';
+    final telefono = user['telefono'] ?? 'Teléfono';
+    final direccion = user['direccion'] ?? 'Dirección';
+    final correo = user['correo'] ?? 'Correo';
+    final cedula = user['id'] ?? 'Cédula'; // El id = nombre doc = cedula
+
     return Card(
       color: Colors.white,
       elevation: 3.0,
@@ -124,51 +165,45 @@ class UserCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    user['nombre'] ?? 'Nombre Usuario',
+                    nombre,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(
-                    height: 10.0,
-                  ),
+                  const SizedBox(height: 10.0),
                   Text(
-                    user['telefono'] ?? 'Telefono',
+                    telefono,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
                     ),
                   ),
-                  SizedBox(
-                    height: 3.0,
-                  ),
+                  const SizedBox(height: 3.0),
                   Text(
-                    user['direccion'] ?? 'Direccion',
+                    direccion,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
                     ),
                   ),
-                  SizedBox(
-                    height: 3.0,
-                  ),
+                  const SizedBox(height: 3.0),
                   Text(
-                    user['correo'] ?? 'Correo',
+                    correo,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
                     ),
                   ),
-                  SizedBox(
-                    height: 15.0,
-                  ),
+                  const SizedBox(height: 15.0),
                   Row(
                     children: [
                       SizedBox(
                         height: 30,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            // Implementar la funcionalidad de editar si es necesario
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryVariantColor,
                             shape: RoundedRectangleBorder(
@@ -184,13 +219,22 @@ class UserCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(
-                        width: 10,
-                      ),
+                      const SizedBox(width: 10),
                       SizedBox(
                         height: 30,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () async {
+                            // Llama al servicio de eliminar usuario
+                            await deletePersona(cedula);
+
+                            // Muestra un mensaje de éxito
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Usuario eliminado con éxito')),
+                            );
+
+                            // Refresca la lista de usuarios
+                            onDelete();
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.secondaryVariantColor,
                             shape: RoundedRectangleBorder(
@@ -217,6 +261,7 @@ class UserCard extends StatelessWidget {
   }
 }
 
+
 class UserFormPage extends StatelessWidget {
   const UserFormPage({super.key});
 
@@ -234,27 +279,41 @@ class UserFormPage extends StatelessWidget {
             width: 70.0,
           ),
         ),
-        centerTitle: true,
+        centerTitle: true, // Centra el logo
         elevation: 0.0,
       ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(40.0),
-                child: _UserForm(),
-              )
-            ],
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 40.0),
+            child: const Text(
+              'USUARIOS',
+              style: TextStyle(
+                fontSize: 14.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-        ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(30, 25, 30, 20),
+                  child: const _UserForm(),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
+//FORMULARIO ADD USER
 class _UserForm extends StatefulWidget {
-  const _UserForm({super.key});
+  const _UserForm();
 
   @override
   State<_UserForm> createState() => _UserFormState();
@@ -289,55 +348,72 @@ class _UserFormState extends State<_UserForm> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Row(
               children: [
-                Text('Cédula', style: Theme.of(context).textTheme.bodyMedium),
-                CustomTextFormField(
-                  controller: _cedulaController,
-                  formFieldType: FormFieldType.identity_card,
-                  hintText: '1705380561',
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Cédula', style: Theme.of(context).textTheme.bodyMedium),
+                      CustomTextFormField(
+                        controller: _cedulaController,
+                        formFieldType: FormFieldType.identity_card,
+                        hintText: 'Cédula Usuario',
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 16.0), // Añade un espacio entre los dos campos
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Nombre', style: Theme.of(context).textTheme.bodyMedium),
+                      CustomTextFormField(
+                        controller: _nombreController,
+                        formFieldType: FormFieldType.name,
+                        hintText: 'Nombre Usuario',
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 20.0),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: 10.0),
+            Row(
               children: [
-                Text('Nombre', style: Theme.of(context).textTheme.bodyMedium),
-                CustomTextFormField(
-                  controller: _nombreController,
-                  formFieldType: FormFieldType.name,
-                  hintText: 'John Doe',
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Contraseña',
+                          style: Theme.of(context).textTheme.bodyMedium),
+                      CustomTextFormField(
+                        controller: _claveController,
+                        formFieldType: FormFieldType.password,
+                        hintText: 'Contraseña',
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 16.0),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Teléfono', style: Theme.of(context).textTheme.bodyMedium),
+                      CustomTextFormField(
+                        controller: _telefonoController,
+                        formFieldType: FormFieldType.phone,
+                        hintText: 'Teléfono Usuario',
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 20.0),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Contraseña',
-                    style: Theme.of(context).textTheme.bodyMedium),
-                CustomTextFormField(
-                  controller: _claveController,
-                  formFieldType: FormFieldType.password,
-                  hintText: '********',
-                ),
-              ],
-            ),
-            const SizedBox(height: 20.0),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Teléfono', style: Theme.of(context).textTheme.bodyMedium),
-                CustomTextFormField(
-                  controller: _telefonoController,
-                  formFieldType: FormFieldType.phone,
-                  hintText: '0987654321',
-                ),
-              ],
-            ),
-            const SizedBox(height: 20.0),
+
+            const SizedBox(height: 10.0),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -346,11 +422,11 @@ class _UserFormState extends State<_UserForm> {
                 CustomTextFormField(
                   controller: _direccionController,
                   formFieldType: FormFieldType.address,
-                  hintText: 'Calle Falsa 123',
+                  hintText: 'Dirección Usuario',
                 ),
               ],
             ),
-            const SizedBox(height: 20.0),
+            const SizedBox(height: 10.0),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -358,31 +434,57 @@ class _UserFormState extends State<_UserForm> {
                 CustomTextFormField(
                   controller: _correoController,
                   formFieldType: FormFieldType.email,
-                  hintText: 'correo@example.com',
+                  hintText: 'Email Usuario',
                 ),
               ],
             ),
             Container(
-              padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
+              padding: const EdgeInsets.fromLTRB(60.0, 20.0, 60.0, 20.0),
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
-                  String cedula = _cedulaController.text.trim();
-                  String nombre = _nombreController.text.trim();
-                  String clave = _claveController.text.trim();
-                  String telefono = _telefonoController.text.trim();
-                  String correo = _correoController.text.trim();
-                  String direccion = _direccionController.text.trim();
+                  if (_formKey.currentState!.validate()) { // Valida el formulario
+                    String cedula = _cedulaController.text.trim();
+                    String nombre = _nombreController.text.trim();
+                    String clave = _claveController.text.trim();
+                    String telefono = _telefonoController.text.trim();
+                    String correo = _correoController.text.trim();
+                    String direccion = _direccionController.text.trim();
 
-                  await addPersona(
-                      cedula, nombre, clave, telefono, correo, direccion);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Usuario registrado con éxito')),
-                  );
+                    // Validar si el usuario ya existe
+                    bool exists = await validateID(cedula);
+                    if (exists) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('La cédula ingresada pertenece a un usuario existente.')),
+                      );
+                    } else {
+                      // Crea el usuario usando el servicio
+                      await addPersona(cedula, nombre, clave, telefono, correo, direccion);
+
+                      // Muestra mensaje de éxito
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Usuario registrado con éxito')),
+                      );
+
+                      // Regresa a la página anterior y pasa un valor booleano
+                      Navigator.pop(context, true);
+                    }
+                  }
                 },
-                child: const Text('Registrar'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.secondaryVariantColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                child: const Text(
+                  'Registrar',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
               ),
+
             ),
           ],
         ),
