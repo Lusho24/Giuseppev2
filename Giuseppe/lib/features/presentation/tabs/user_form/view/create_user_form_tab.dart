@@ -300,7 +300,7 @@ void _showEditDialog(BuildContext context, String cedula, String nombre,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
-                spreadRadius: 1,
+                spreadRadius: 2,
                 blurRadius: 3,
                 offset: Offset(0, 3),
               ),
@@ -309,14 +309,11 @@ void _showEditDialog(BuildContext context, String cedula, String nombre,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  'Editar Usuario',
-                  style: TextStyle(
-                    fontSize: 25.0,
-                    fontWeight: FontWeight.w400,
-                  ),
+              Text(
+                'Editar Usuario',
+                style: TextStyle(
+                  fontSize: 25.0,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
               Padding(
