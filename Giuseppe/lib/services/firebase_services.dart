@@ -48,24 +48,19 @@ Future<void> addPersona(String cedula, String nombre, String clave, String telef
 }
 
 // Actualizar un usuario existente
-Future<void> updatePersona(String cedula, String nombre, String telefono, String correo, String direccion, String clave) async {
+Future<void> updatePersona(String cedula, String nombre, String telefono, String correo, String direccion) async {
   try {
-    // Validar usuario antes de actualizar
-    bool isValidUser = await validateUsuario(cedula, clave);
-    if (isValidUser) {
-      await db.collection('usuario').doc(cedula).update({
-        'nombre': nombre,
-        'telefono': telefono,
-        'correo': correo,
-        'direccion': direccion,
-      });
-    } else {
-      print("No se puede actualizar. Usuario o clave inválida.");
-    }
+    await db.collection('usuario').doc(cedula).update({
+      'nombre': nombre,
+      'telefono': telefono,
+      'correo': correo,
+      'direccion': direccion,
+    });
   } catch (e) {
     print("Error actualizando usuario: $e");
   }
 }
+
 
 // Eliminar un usuario
 Future<void> deletePersona(String cedula) async {
