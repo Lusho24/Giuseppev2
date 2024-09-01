@@ -132,6 +132,7 @@ class InventoryCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10.0),
       ),
+      color: AppColors.primaryColor,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
