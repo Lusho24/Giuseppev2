@@ -15,7 +15,8 @@ class CreateObjectFormTab extends StatelessWidget {
               padding: const EdgeInsets.only(top: 60.0, bottom: 20.0),
               child: const Image(
                   image: AssetImage('assets/images/logo.png'),
-                width: 70.0,
+                height: 75.0,
+                width: double.infinity,
               ),
             ),
             Container(
@@ -178,46 +179,6 @@ class _NewObjectFormState extends State<_NewObjectForm> {
             ],
           )
       )
-    );
-  }
-}
-
-class CategoryDropdown extends StatelessWidget {
-  final String? selectedCategory;
-  final Function(String?) onCategorySelected;
-  final List<String> categories;
-
-  const CategoryDropdown({
-    super.key,
-    required this.selectedCategory,
-    required this.onCategorySelected,
-    required this.categories,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        DropdownMenu(
-          initialSelection: selectedCategory,
-          inputDecorationTheme: const InputDecorationTheme(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10.0)),
-            ),
-          ),
-          hintText: 'Seleccione una categoría',
-          onSelected: (String? value) {
-            onCategorySelected(value); // Llama a la función de callback para actualizar la categoría
-          },
-          dropdownMenuEntries: categories.map((String category) {
-            return DropdownMenuEntry<String>(
-              value: category,
-              label: category,
-            );
-          }).toList(),
-        ),
-      ],
     );
   }
 }

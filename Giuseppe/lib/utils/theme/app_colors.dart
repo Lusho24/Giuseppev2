@@ -18,5 +18,7 @@ class AppColors {
   // Colores de los Textos
   static const Color textColor = Color.fromRGBO(0, 0, 0, 1.0);
   static const Color hintTextColor = Color.fromRGBO(180, 180, 180, 1.0);
+  static const Color variantTextColor = Color.fromRGBO(
+      93, 93, 93, 0.7490196078431373);
   static const Color secondaryTextColor = Color.fromRGBO(255, 255, 255, 1.0);
 }
